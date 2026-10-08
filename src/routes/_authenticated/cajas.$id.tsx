@@ -6,6 +6,9 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { boxQuery, STATUSES, statusLabel } from "@/lib/boxes";
 import { BoxForm } from "@/components/BoxForm";
+import { QuickAddItems } from "@/components/QuickAddItems";
+import { ItemsList } from "@/components/ItemsList";
+import { BoxPhotos } from "@/components/BoxPhotos";
 
 export const Route = createFileRoute("/_authenticated/cajas/$id")({
   head: () => ({
@@ -20,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/cajas/$id")({
 
 function BoxDetail() {
   const { id } = Route.useParams();
-  const { queryClient } = Route.useRouteContext();
+  const { queryClient, user } = Route.useRouteContext();
   const navigate = useNavigate();
   const { data: box } = useSuspenseQuery(boxQuery(id));
   const [editing, setEditing] = useState(false);
@@ -82,18 +85,10 @@ function BoxDetail() {
           </div>
           <button onClick={() => setEditing(true)} className="btn-secondary mb-6 w-full">Editar caja</button>
 
-          <h2 className="field-label">Objetos ({box.items.length})</h2>
-          {box.items.length === 0 ? (
-            <p className="mb-6 rounded-lg border-2 border-dashed border-foreground/30 p-4 text-center text-muted-foreground">
-              Aún no hay objetos. La entrada rápida por voz llegará en la siguiente fase.
-            </p>
-          ) : (
-            <ul className="mb-6 divide-y rounded-lg border-2 border-foreground bg-card">
-              {box.items.map((it) => (
-                <li key={it.id} className="flex justify-between p-3"><span>{it.name}</span><span className="text-muted-foreground">×{it.quantity}</span></li>
-              ))}
-            </ul>
-          )}
+          <h2 className="field-label">Objetos ({box.items.filter((i) => !i.unpacked).length} pendientes de {box.items.length})</h2>
+          <QuickAddItems boxId={box.id} userId={user.id} onSaved={refresh} />
+          <ItemsList items={box.items} onChange={refresh} />
+          <BoxPhotos boxId={box.id} userId={user.id} photos={box.photos} onChange={refresh} />
           <button onClick={remove} className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-destructive"><Trash2 className="h-4 w-4" /> Borrar caja</button>
         </>
       )}
