@@ -33,12 +33,12 @@ function AuthPage() {
     if (mode === "login") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       setBusy(false);
-      if (error) return toast.error("Email o contraseña incorrectos");
+      if (error) { toast.error("Email o contraseña incorrectos"); return; }
       navigate({ to: "/cajas", replace: true });
     } else {
       const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });
       setBusy(false);
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       if (data.session) navigate({ to: "/cajas", replace: true });
       else setSent(true);
     }

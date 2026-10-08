@@ -34,14 +34,14 @@ function BoxDetail() {
 
   async function setStatus(status: string) {
     const { error } = await supabase.from("boxes").update({ status }).eq("id", id);
-    if (error) return toast.error("No se pudo cambiar el estado");
+    if (error) { toast.error("No se pudo cambiar el estado"); return; }
     await refresh();
   }
 
   async function remove() {
     if (!confirm(`¿Borrar la caja ${box!.code} y su contenido?`)) return;
     const { error } = await supabase.from("boxes").delete().eq("id", id);
-    if (error) return toast.error("No se pudo borrar");
+    if (error) { toast.error("No se pudo borrar"); return; }
     await queryClient.invalidateQueries({ queryKey: ["boxes"] });
     navigate({ to: "/cajas" });
   }
