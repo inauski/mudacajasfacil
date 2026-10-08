@@ -14,7 +14,113 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      box_counters: {
+        Row: {
+          last_number: number
+          user_id: string
+        }
+        Insert: {
+          last_number?: number
+          user_id: string
+        }
+        Update: {
+          last_number?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      boxes: {
+        Row: {
+          code: string
+          created_at: string
+          essential: boolean
+          fragile: boolean
+          id: string
+          location: string
+          notes: string
+          number: number
+          photos: string[]
+          room: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          code?: string
+          created_at?: string
+          essential?: boolean
+          fragile?: boolean
+          id?: string
+          location?: string
+          notes?: string
+          number?: number
+          photos?: string[]
+          room?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          essential?: boolean
+          fragile?: boolean
+          id?: string
+          location?: string
+          notes?: string
+          number?: number
+          photos?: string[]
+          room?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      items: {
+        Row: {
+          box_id: string
+          created_at: string
+          id: string
+          name: string
+          photo: string | null
+          quantity: number
+          tags: string[]
+          unpacked: boolean
+          user_id: string
+        }
+        Insert: {
+          box_id: string
+          created_at?: string
+          id?: string
+          name: string
+          photo?: string | null
+          quantity?: number
+          tags?: string[]
+          unpacked?: boolean
+          user_id?: string
+        }
+        Update: {
+          box_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          photo?: string | null
+          quantity?: number
+          tags?: string[]
+          unpacked?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "items_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
