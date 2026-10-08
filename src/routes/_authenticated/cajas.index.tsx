@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { AlertTriangle, Star, Plus } from "lucide-react";
+import { AlertTriangle, Star, Plus, Search } from "lucide-react";
 import { boxesQuery, STATUSES, statusLabel } from "@/lib/boxes";
 
 export const Route = createFileRoute("/_authenticated/cajas/")({
@@ -31,6 +31,7 @@ function BoxesList() {
         </div>
         <span className="stamp">{boxes.length} cajas</span>
       </header>
+      <Link to="/buscar" className="field mb-3 flex items-center gap-3 text-muted-foreground"><Search className="h-5 w-5" /> Buscar un objeto…</Link>
 
       <div className="mb-4 grid grid-cols-2 gap-2">
         <select value={room} onChange={(e) => setRoom(e.target.value)} className="h-12 rounded-lg border-2 border-foreground bg-card px-3 text-base">
