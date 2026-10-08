@@ -38,6 +38,7 @@ export function QuickAddItems({ boxId, userId, onSaved }: { boxId: string; userI
       let tmp = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const r = e.results[i];
+        if (!r) continue;
         // each final result corresponds to a pause → treat as a separate item chunk
         if (r.isFinal) finalRef.current.push(r[0].transcript.trim());
         else tmp += r[0].transcript;
@@ -60,7 +61,7 @@ export function QuickAddItems({ boxId, userId, onSaved }: { boxId: string; userI
 
   function review() {
     const d = parseItems(text);
-    if (!d.length) return toast.error("Escribe al menos un objeto");
+    if (!d.length) { toast.error("Escribe al menos un objeto"); return; }
     setDrafts(d);
   }
 

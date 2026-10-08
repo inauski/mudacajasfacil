@@ -16,7 +16,7 @@ describe("parseItems", () => {
     ]);
   });
   it("defaults quantity to 1", () => {
-    expect(parseItems("una manta")[0].quantity).toBe(1);
-    expect(parseItems("toallas")[0].quantity).toBe(1);
+    expect(parseItems("una manta")[0]?.quantity).toBe(1);
+    expect(parseItems("toallas")[0]?.quantity).toBe(1);
   });
 });

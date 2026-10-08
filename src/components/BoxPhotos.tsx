@@ -83,26 +83,26 @@ export function BoxPhotos({ boxId, userId, photos, onChange }: { boxId: string; 
       <input ref={camRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => { upload(e.target.files); e.target.value = ""; }} />
       <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => { upload(e.target.files); e.target.value = ""; }} />
 
-      {viewer !== null && photos[viewer] && (
+      {viewer !== null && photos[viewer] && (() => { const cur = photos[viewer]!; return (
         <div className="fixed inset-0 z-50 flex flex-col bg-foreground"
           onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }}
           onTouchEnd={(e) => { const dx = e.changedTouches[0].clientX - touchX.current; if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1); }}>
           <div className="flex items-center justify-between p-3 text-background">
             <span className="font-semibold">{viewer + 1} / {photos.length}</span>
             <div className="flex gap-2">
-              <button aria-label="Borrar foto" onClick={() => remove(photos[viewer])} className="flex h-12 w-12 items-center justify-center"><Trash2 /></button>
+              <button aria-label="Borrar foto" onClick={() => remove(cur)} className="flex h-12 w-12 items-center justify-center"><Trash2 /></button>
               <button aria-label="Cerrar" onClick={() => setViewer(null)} className="flex h-12 w-12 items-center justify-center"><X className="h-7 w-7" /></button>
             </div>
           </div>
           <div className="relative flex flex-1 items-center justify-center overflow-auto">
-            <img src={urls[photos[viewer]]} alt="" className="max-h-full max-w-full touch-pinch-zoom object-contain" />
+            <img src={urls[cur]} alt="" className="max-h-full max-w-full touch-pinch-zoom object-contain" />
             {photos.length > 1 && <>
               <button aria-label="Anterior" onClick={() => go(-1)} className="absolute left-2 flex h-12 w-12 items-center justify-center rounded-full bg-background/80"><ChevronLeft /></button>
               <button aria-label="Siguiente" onClick={() => go(1)} className="absolute right-2 flex h-12 w-12 items-center justify-center rounded-full bg-background/80"><ChevronRight /></button>
             </>}
           </div>
         </div>
-      )}
+      ); })()}
     </div>
   );
 }
