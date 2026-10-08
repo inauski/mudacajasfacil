@@ -13,8 +13,9 @@ export function parseItems(text: string): DraftItem[] {
     .filter(Boolean)
     .map((part) => {
       const m = part.match(/^(\d+|[a-záéíóúñ]+)\s+(.+)$/i);
-      if (m) {
-        const n = /^\d+$/.test(m[1]) ? parseInt(m[1], 10) : NUMBERS[m[1].toLowerCase()];
+      if (m && m[1] && m[2]) {
+        const w = m[1];
+        const n = /^\d+$/.test(w) ? parseInt(w, 10) : NUMBERS[w.toLowerCase()];
         if (n && n > 0) return { name: cap(m[2]), quantity: n };
       }
       return { name: cap(part), quantity: 1 };
