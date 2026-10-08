@@ -124,3 +124,10 @@
   .tag-essential { @apply inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs font-bold; }
   .tag-fragile { @apply inline-flex items-center gap-1 rounded-full bg-destructive px-2.5 py-1 text-xs font-bold text-destructive-foreground; }
 }
+
+@media print {
+  .no-print, nav, [data-sonner-toaster] { display: none !important; }
+  body { background: white !important; color: black !important; }
+  .print-box { break-inside: avoid; box-shadow: none !important; background: white !important; margin-bottom: 12px; }
+  @page { margin: 14mm; }
+}

@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAjustesRouteImport } from './routes/_authenticated/ajustes'
+import { Route as AuthenticatedBuscarRouteImport } from './routes/_authenticated/buscar'
+import { Route as AuthenticatedExportarRouteImport } from './routes/_authenticated/exportar'
 import { Route as AuthenticatedCajasIndexRouteImport } from './routes/_authenticated/cajas.index'
 import { Route as AuthenticatedCajasIdRouteImport } from './routes/_authenticated/cajas.$id'
 import { Route as AuthenticatedCajasNuevaRouteImport } from './routes/_authenticated/cajas.nueva'
@@ -29,6 +32,21 @@ const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAjustesRoute = AuthenticatedAjustesRouteImport.update({
+  id: '/ajustes',
+  path: '/ajustes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBuscarRoute = AuthenticatedBuscarRouteImport.update({
+  id: '/buscar',
+  path: '/buscar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedExportarRoute = AuthenticatedExportarRouteImport.update({
+  id: '/exportar',
+  path: '/exportar',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCajasIndexRoute = AuthenticatedCajasIndexRouteImport.update({
   id: '/cajas/',
@@ -49,6 +67,9 @@ const AuthenticatedCajasNuevaRoute = AuthenticatedCajasNuevaRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/ajustes': typeof AuthenticatedAjustesRoute
+  '/buscar': typeof AuthenticatedBuscarRoute
+  '/exportar': typeof AuthenticatedExportarRoute
   '/cajas/$id': typeof AuthenticatedCajasIdRoute
   '/cajas/nueva': typeof AuthenticatedCajasNuevaRoute
   '/cajas/': typeof AuthenticatedCajasIndexRoute
@@ -56,6 +77,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/ajustes': typeof AuthenticatedAjustesRoute
+  '/buscar': typeof AuthenticatedBuscarRoute
+  '/exportar': typeof AuthenticatedExportarRoute
   '/cajas/$id': typeof AuthenticatedCajasIdRoute
   '/cajas/nueva': typeof AuthenticatedCajasNuevaRoute
   '/cajas': typeof AuthenticatedCajasIndexRoute
@@ -65,20 +89,42 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/ajustes': typeof AuthenticatedAjustesRoute
+  '/_authenticated/buscar': typeof AuthenticatedBuscarRoute
+  '/_authenticated/exportar': typeof AuthenticatedExportarRoute
   '/_authenticated/cajas/$id': typeof AuthenticatedCajasIdRoute
   '/_authenticated/cajas/nueva': typeof AuthenticatedCajasNuevaRoute
   '/_authenticated/cajas/': typeof AuthenticatedCajasIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/cajas/$id' | '/cajas/nueva' | '/cajas/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/ajustes'
+    | '/buscar'
+    | '/exportar'
+    | '/cajas/$id'
+    | '/cajas/nueva'
+    | '/cajas/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/cajas/$id' | '/cajas/nueva' | '/cajas'
+  to:
+    | '/'
+    | '/auth'
+    | '/ajustes'
+    | '/buscar'
+    | '/exportar'
+    | '/cajas/$id'
+    | '/cajas/nueva'
+    | '/cajas'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/ajustes'
+    | '/_authenticated/buscar'
+    | '/_authenticated/exportar'
     | '/_authenticated/cajas/$id'
     | '/_authenticated/cajas/nueva'
     | '/_authenticated/cajas/'
@@ -113,6 +159,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/ajustes': {
+      id: '/_authenticated/ajustes'
+      path: '/ajustes'
+      fullPath: '/ajustes'
+      preLoaderRoute: typeof AuthenticatedAjustesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/buscar': {
+      id: '/_authenticated/buscar'
+      path: '/buscar'
+      fullPath: '/buscar'
+      preLoaderRoute: typeof AuthenticatedBuscarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/exportar': {
+      id: '/_authenticated/exportar'
+      path: '/exportar'
+      fullPath: '/exportar'
+      preLoaderRoute: typeof AuthenticatedExportarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cajas/': {
       id: '/_authenticated/cajas/'
       path: '/cajas'
@@ -138,12 +205,18 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAjustesRoute: typeof AuthenticatedAjustesRoute
+  AuthenticatedBuscarRoute: typeof AuthenticatedBuscarRoute
+  AuthenticatedExportarRoute: typeof AuthenticatedExportarRoute
   AuthenticatedCajasIdRoute: typeof AuthenticatedCajasIdRoute
   AuthenticatedCajasNuevaRoute: typeof AuthenticatedCajasNuevaRoute
   AuthenticatedCajasIndexRoute: typeof AuthenticatedCajasIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAjustesRoute: AuthenticatedAjustesRoute,
+  AuthenticatedBuscarRoute: AuthenticatedBuscarRoute,
+  AuthenticatedExportarRoute: AuthenticatedExportarRoute,
   AuthenticatedCajasIdRoute: AuthenticatedCajasIdRoute,
   AuthenticatedCajasNuevaRoute: AuthenticatedCajasNuevaRoute,
   AuthenticatedCajasIndexRoute: AuthenticatedCajasIndexRoute,
