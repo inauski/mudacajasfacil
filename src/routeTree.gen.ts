@@ -10,33 +10,84 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedCajasIndexRouteImport } from './routes/_authenticated/cajas.index'
+import { Route as AuthenticatedCajasIdRouteImport } from './routes/_authenticated/cajas.$id'
+import { Route as AuthenticatedCajasNuevaRouteImport } from './routes/_authenticated/cajas.nueva'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCajasIndexRoute = AuthenticatedCajasIndexRouteImport.update({
+  id: '/cajas/',
+  path: '/cajas/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCajasIdRoute = AuthenticatedCajasIdRouteImport.update({
+  id: '/cajas/$id',
+  path: '/cajas/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCajasNuevaRoute = AuthenticatedCajasNuevaRouteImport.update({
+  id: '/cajas/nueva',
+  path: '/cajas/nueva',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/cajas/$id': typeof AuthenticatedCajasIdRoute
+  '/cajas/nueva': typeof AuthenticatedCajasNuevaRoute
+  '/cajas/': typeof AuthenticatedCajasIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/cajas/$id': typeof AuthenticatedCajasIdRoute
+  '/cajas/nueva': typeof AuthenticatedCajasNuevaRoute
+  '/cajas': typeof AuthenticatedCajasIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/cajas/$id': typeof AuthenticatedCajasIdRoute
+  '/_authenticated/cajas/nueva': typeof AuthenticatedCajasNuevaRoute
+  '/_authenticated/cajas/': typeof AuthenticatedCajasIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/auth' | '/cajas/$id' | '/cajas/nueva' | '/cajas/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/auth' | '/cajas/$id' | '/cajas/nueva' | '/cajas'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/cajas/$id'
+    | '/_authenticated/cajas/nueva'
+    | '/_authenticated/cajas/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +99,63 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/cajas/': {
+      id: '/_authenticated/cajas/'
+      path: '/cajas'
+      fullPath: '/cajas/'
+      preLoaderRoute: typeof AuthenticatedCajasIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cajas/$id': {
+      id: '/_authenticated/cajas/$id'
+      path: '/cajas/$id'
+      fullPath: '/cajas/$id'
+      preLoaderRoute: typeof AuthenticatedCajasIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cajas/nueva': {
+      id: '/_authenticated/cajas/nueva'
+      path: '/cajas/nueva'
+      fullPath: '/cajas/nueva'
+      preLoaderRoute: typeof AuthenticatedCajasNuevaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCajasIdRoute: typeof AuthenticatedCajasIdRoute
+  AuthenticatedCajasNuevaRoute: typeof AuthenticatedCajasNuevaRoute
+  AuthenticatedCajasIndexRoute: typeof AuthenticatedCajasIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCajasIdRoute: AuthenticatedCajasIdRoute,
+  AuthenticatedCajasNuevaRoute: AuthenticatedCajasNuevaRoute,
+  AuthenticatedCajasIndexRoute: AuthenticatedCajasIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
