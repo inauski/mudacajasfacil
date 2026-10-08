@@ -85,8 +85,8 @@ export function BoxPhotos({ boxId, userId, photos, onChange }: { boxId: string; 
 
       {viewer !== null && photos[viewer] && (() => { const cur = photos[viewer]!; return (
         <div className="fixed inset-0 z-50 flex flex-col bg-foreground"
-          onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }}
-          onTouchEnd={(e) => { const dx = e.changedTouches[0].clientX - touchX.current; if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1); }}>
+          onTouchStart={(e) => { touchX.current = e.touches[0]?.clientX ?? 0; }}
+          onTouchEnd={(e) => { const dx = (e.changedTouches[0]?.clientX ?? 0) - touchX.current; if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1); }}>
           <div className="flex items-center justify-between p-3 text-background">
             <span className="font-semibold">{viewer + 1} / {photos.length}</span>
             <div className="flex gap-2">
