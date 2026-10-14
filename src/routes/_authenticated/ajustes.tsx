@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ShieldCheck, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { InstallHelp } from "@/components/InstallHelp";
+import { CleanupPhotos } from "@/components/CleanupPhotos";
 
 export const Route = createFileRoute("/_authenticated/ajustes")({
   head: () => ({ meta: [{ title: "Ajustes y privacidad · Muda Fácil" }, { name: "description", content: "Tu sesión, instalación en el móvil y cómo protegemos tus datos." }] }),
@@ -36,6 +37,7 @@ function Settings() {
         <button onClick={signOut} className="btn-secondary mt-3 w-full"><LogOut className="h-5 w-5" /> Cerrar sesión</button>
       </div>
       <InstallHelp />
+      <CleanupPhotos userId={user.id} />
       <div className="box-card">
         <h2 className="mb-3 flex items-center gap-2 font-display text-2xl font-extrabold"><ShieldCheck className="h-7 w-7 text-primary" /> Tu espacio es privado</h2>
         <ul className="space-y-3">
