@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Mic, MicOff, Trash2, Keyboard } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { parseItems, type DraftItem } from "@/lib/parse-items";
+import { mergeTranscripts, parseItems, type DraftItem } from "@/lib/parse-items";
 
 type SR = { start(): void; stop(): void; lang: string; continuous: boolean; interimResults: boolean;
   onresult: ((e: { resultIndex: number; results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } }> }) => void) | null;
@@ -26,6 +26,8 @@ export function QuickAddItems({ boxId, userId, onSaved }: { boxId: string; userI
 
   useEffect(() => setSupported(!!getSR()), []);
 
+  const [origin, setOrigin] = useState("");
+
   function startVoice() {
     const C = getSR();
     if (!C) return;
@@ -35,22 +37,24 @@ export function QuickAddItems({ boxId, userId, onSaved }: { boxId: string; userI
     rec.interimResults = true;
     finalRef.current = [];
     rec.onresult = (e) => {
+      // Rebuild from all results by index so the same chunk is never counted twice
       let tmp = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) {
+      const finals: string[] = [];
+      for (let i = 0; i < e.results.length; i++) {
         const r = e.results[i];
         if (!r) continue;
-        // each final result corresponds to a pause → treat as a separate item chunk
-        if (r.isFinal) finalRef.current.push(r[0].transcript.trim());
+        if (r.isFinal) finals[i] = r[0].transcript.trim();
         else tmp += r[0].transcript;
       }
-      setInterim([...finalRef.current, tmp].filter(Boolean).join(", "));
+      finalRef.current = finals.filter(Boolean);
+      setInterim([mergeTranscripts(finalRef.current), tmp.trim()].filter(Boolean).join(", "));
     };
     rec.onerror = (e) => { if (e.error === "not-allowed") toast.error("Permite el acceso al micrófono"); };
     rec.onend = () => {
       setListening(false);
-      const all = finalRef.current.join(", ");
+      const all = mergeTranscripts(finalRef.current);
       setInterim("");
-      if (all.trim()) setDrafts(parseItems(all));
+      if (all.trim()) setDrafts(parseItems(all).map((d) => ({ ...d, origin })));
     };
     recRef.current = rec;
     rec.start();
@@ -62,13 +66,14 @@ export function QuickAddItems({ boxId, userId, onSaved }: { boxId: string; userI
   function review() {
     const d = parseItems(text);
     if (!d.length) { toast.error("Escribe al menos un objeto"); return; }
-    setDrafts(d);
+    setDrafts(d.map((x) => ({ ...x, origin })));
   }
 
   async function saveAll() {
     if (!drafts) return;
     const rows = drafts.filter((d) => d.name.trim()).map((d) => ({
       box_id: boxId, user_id: userId, name: d.name.trim(), quantity: Math.max(1, d.quantity || 1),
+      origin: (d.origin ?? "").trim(),
     }));
     if (!rows.length) { setDrafts(null); return; }
     setSaving(true);
