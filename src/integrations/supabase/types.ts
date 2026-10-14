@@ -83,6 +83,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          origin: string
           photo: string | null
           quantity: number
           tags: string[]
@@ -94,6 +95,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          origin?: string
           photo?: string | null
           quantity?: number
           tags?: string[]
@@ -105,6 +107,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          origin?: string
           photo?: string | null
           quantity?: number
           tags?: string[]
