@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ROOMS, STATUSES } from "@/lib/boxes";
 
 export type BoxFormValues = {
+  code?: string;
   room: string;
   status: string;
   location: string;
@@ -28,6 +29,7 @@ export function BoxForm({
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [essential, setEssential] = useState(initial?.essential ?? false);
   const [fragile, setFragile] = useState(initial?.fragile ?? false);
+  const [code, setCode] = useState(initial?.code ?? "");
   const [busy, setBusy] = useState(false);
 
   return (
@@ -39,13 +41,21 @@ export function BoxForm({
         try {
           await onSubmit({
             room: (roomSel === "__otra" ? customRoom : roomSel).trim(),
-            status, location: location.trim(), notes: notes.trim(), essential, fragile,
+            status, location: location.trim(),
+            ...(initial?.code !== undefined ? { code: code.trim().toUpperCase() } : {}), notes: notes.trim(), essential, fragile,
           });
         } finally {
           setBusy(false);
         }
       }}
     >
+      {initial?.code !== undefined && (
+        <div>
+          <label className="field-label" htmlFor="code">Número de caja</label>
+          <input id="code" required value={code} onChange={(e) => setCode(e.target.value)} placeholder="Ej. C-001" className="field font-display text-2xl font-extrabold uppercase" />
+        </div>
+      )}
+
       <div>
         <label className="field-label">Habitación de origen</label>
         <div className="grid grid-cols-2 gap-2">
