@@ -91,17 +91,21 @@ export function QuickAddItems({ boxId, userId, onSaved }: { boxId: string; userI
       <div className="box-card mb-6 space-y-3">
         <h3 className="field-label mb-0">Revisa antes de guardar ({drafts.length})</h3>
         {drafts.map((d, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <input value={d.name} onChange={(e) => setDrafts(drafts.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
-              className="field h-12 flex-1 text-base" aria-label="Nombre" />
-            <input type="number" min={1} inputMode="numeric" value={d.quantity}
-              onChange={(e) => setDrafts(drafts.map((x, j) => j === i ? { ...x, quantity: parseInt(e.target.value) || 1 } : x))}
-              className="field h-12 w-16 px-2 text-center text-base" aria-label="Cantidad" />
-            <button type="button" aria-label="Quitar" onClick={() => setDrafts(drafts.filter((_, j) => j !== i))}
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border-2 border-foreground"><Trash2 className="h-5 w-5" /></button>
+          <div key={i} className="space-y-1 rounded-lg border border-foreground/20 p-2">
+            <div className="flex items-center gap-2">
+              <input value={d.name} onChange={(e) => setDrafts(drafts.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
+                className="field h-12 flex-1 text-base" aria-label="Nombre" />
+              <input type="number" min={1} inputMode="numeric" value={d.quantity}
+                onChange={(e) => setDrafts(drafts.map((x, j) => j === i ? { ...x, quantity: parseInt(e.target.value) || 1 } : x))}
+                className="field h-12 w-16 px-2 text-center text-base" aria-label="Cantidad" />
+              <button type="button" aria-label="Quitar" onClick={() => setDrafts(drafts.filter((_, j) => j !== i))}
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border-2 border-foreground"><Trash2 className="h-5 w-5" /></button>
+            </div>
+            <input value={d.origin ?? ""} onChange={(e) => setDrafts(drafts.map((x, j) => j === i ? { ...x, origin: e.target.value } : x))}
+              placeholder="¿Dónde estaba? Ej: armario de la cocina" className="field h-11 w-full text-sm" aria-label="Dónde estaba" />
           </div>
         ))}
-        <button type="button" onClick={() => setDrafts([...drafts, { name: "", quantity: 1 }])} className="w-full py-2 font-semibold underline">+ Añadir otro</button>
+        <button type="button" onClick={() => setDrafts([...drafts, { name: "", quantity: 1, origin }])} className="w-full py-2 font-semibold underline">+ Añadir otro</button>
         <div className="grid grid-cols-2 gap-2">
           <button type="button" onClick={() => setDrafts(null)} className="btn-secondary">Cancelar</button>
           <button type="button" disabled={saving} onClick={saveAll} className="btn-primary">{saving ? "Guardando…" : "Guardar todo"}</button>
@@ -112,6 +116,13 @@ export function QuickAddItems({ boxId, userId, onSaved }: { boxId: string; userI
 
   return (
     <div className="mb-6 space-y-3">
+      {!listening && (
+        <div>
+          <label htmlFor="origin" className="field-label">¿Dónde estaban estos objetos? (opcional)</label>
+          <input id="origin" value={origin} onChange={(e) => setOrigin(e.target.value)}
+            placeholder="Ej: estantería del salón" className="field h-12 w-full text-base" />
+        </div>
+      )}
       {supported && (
         <button type="button" onClick={listening ? stopVoice : startVoice}
           className={`flex h-24 w-full items-center justify-center gap-3 rounded-xl border-2 border-foreground text-xl font-bold ${listening ? "animate-pulse bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"}`}
