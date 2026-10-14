@@ -15,6 +15,13 @@
       "when": 1792001661073,
       "tag": "0001_add_item_origin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792003333277,
+      "tag": "0002_allow_edit_box_code",
+      "breakpoints": true
     }
   ]
 }

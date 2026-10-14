@@ -70,7 +70,7 @@ function BoxDetail() {
           submitLabel="Guardar cambios"
           onSubmit={async (v) => {
             const { error } = await supabase.from("boxes").update(v).eq("id", id);
-            if (error) { toast.error("No se pudo guardar"); return; }
+            if (error) { toast.error(error.code === "23505" ? "Ya tienes otra caja con ese número" : "No se pudo guardar"); return; }
             await refresh();
             setEditing(false);
           }}
