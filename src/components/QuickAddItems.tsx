@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Mic, MicOff, Trash2, Keyboard } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { parseItems, type DraftItem } from "@/lib/parse-items";
+import { mergeTranscripts, parseItems, type DraftItem } from "@/lib/parse-items";
 
 type SR = { start(): void; stop(): void; lang: string; continuous: boolean; interimResults: boolean;
   onresult: ((e: { resultIndex: number; results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } }> }) => void) | null;
@@ -26,6 +26,8 @@ export function QuickAddItems({ boxId, userId, onSaved }: { boxId: string; userI
 
   useEffect(() => setSupported(!!getSR()), []);
 
+  const [origin, setOrigin] = useState("");
+
   function startVoice() {
     const C = getSR();
     if (!C) return;
@@ -35,22 +37,24 @@ export function QuickAddItems({ boxId, userId, onSaved }: { boxId: string; userI
     rec.interimResults = true;
     finalRef.current = [];
     rec.onresult = (e) => {
+      // Rebuild from all results by index so the same chunk is never counted twice
       let tmp = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) {
+      const finals: string[] = [];
+      for (let i = 0; i < e.results.length; i++) {
         const r = e.results[i];
         if (!r) continue;
-        // each final result corresponds to a pause → treat as a separate item chunk
-        if (r.isFinal) finalRef.current.push(r[0].transcript.trim());
+        if (r.isFinal) finals[i] = r[0].transcript.trim();
         else tmp += r[0].transcript;
       }
-      setInterim([...finalRef.current, tmp].filter(Boolean).join(", "));
+      finalRef.current = finals.filter(Boolean);
+      setInterim([mergeTranscripts(finalRef.current), tmp.trim()].filter(Boolean).join(", "));
     };
     rec.onerror = (e) => { if (e.error === "not-allowed") toast.error("Permite el acceso al micrófono"); };
     rec.onend = () => {
       setListening(false);
-      const all = finalRef.current.join(", ");
+      const all = mergeTranscripts(finalRef.current);
       setInterim("");
-      if (all.trim()) setDrafts(parseItems(all));
+      if (all.trim()) setDrafts(parseItems(all).map((d) => ({ ...d, origin })));
     };
     recRef.current = rec;
     rec.start();
@@ -62,13 +66,14 @@ export function QuickAddItems({ boxId, userId, onSaved }: { boxId: string; userI
   function review() {
     const d = parseItems(text);
     if (!d.length) { toast.error("Escribe al menos un objeto"); return; }
-    setDrafts(d);
+    setDrafts(d.map((x) => ({ ...x, origin })));
   }
 
   async function saveAll() {
     if (!drafts) return;
     const rows = drafts.filter((d) => d.name.trim()).map((d) => ({
       box_id: boxId, user_id: userId, name: d.name.trim(), quantity: Math.max(1, d.quantity || 1),
+      origin: (d.origin ?? "").trim(),
     }));
     if (!rows.length) { setDrafts(null); return; }
     setSaving(true);
@@ -86,17 +91,21 @@ export function QuickAddItems({ boxId, userId, onSaved }: { boxId: string; userI
       <div className="box-card mb-6 space-y-3">
         <h3 className="field-label mb-0">Revisa antes de guardar ({drafts.length})</h3>
         {drafts.map((d, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <input value={d.name} onChange={(e) => setDrafts(drafts.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
-              className="field h-12 flex-1 text-base" aria-label="Nombre" />
-            <input type="number" min={1} inputMode="numeric" value={d.quantity}
-              onChange={(e) => setDrafts(drafts.map((x, j) => j === i ? { ...x, quantity: parseInt(e.target.value) || 1 } : x))}
-              className="field h-12 w-16 px-2 text-center text-base" aria-label="Cantidad" />
-            <button type="button" aria-label="Quitar" onClick={() => setDrafts(drafts.filter((_, j) => j !== i))}
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border-2 border-foreground"><Trash2 className="h-5 w-5" /></button>
+          <div key={i} className="space-y-1 rounded-lg border border-foreground/20 p-2">
+            <div className="flex items-center gap-2">
+              <input value={d.name} onChange={(e) => setDrafts(drafts.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
+                className="field h-12 flex-1 text-base" aria-label="Nombre" />
+              <input type="number" min={1} inputMode="numeric" value={d.quantity}
+                onChange={(e) => setDrafts(drafts.map((x, j) => j === i ? { ...x, quantity: parseInt(e.target.value) || 1 } : x))}
+                className="field h-12 w-16 px-2 text-center text-base" aria-label="Cantidad" />
+              <button type="button" aria-label="Quitar" onClick={() => setDrafts(drafts.filter((_, j) => j !== i))}
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border-2 border-foreground"><Trash2 className="h-5 w-5" /></button>
+            </div>
+            <input value={d.origin ?? ""} onChange={(e) => setDrafts(drafts.map((x, j) => j === i ? { ...x, origin: e.target.value } : x))}
+              placeholder="¿Dónde estaba? Ej: armario de la cocina" className="field h-11 w-full text-sm" aria-label="Dónde estaba" />
           </div>
         ))}
-        <button type="button" onClick={() => setDrafts([...drafts, { name: "", quantity: 1 }])} className="w-full py-2 font-semibold underline">+ Añadir otro</button>
+        <button type="button" onClick={() => setDrafts([...drafts, { name: "", quantity: 1, origin }])} className="w-full py-2 font-semibold underline">+ Añadir otro</button>
         <div className="grid grid-cols-2 gap-2">
           <button type="button" onClick={() => setDrafts(null)} className="btn-secondary">Cancelar</button>
           <button type="button" disabled={saving} onClick={saveAll} className="btn-primary">{saving ? "Guardando…" : "Guardar todo"}</button>
@@ -107,6 +116,13 @@ export function QuickAddItems({ boxId, userId, onSaved }: { boxId: string; userI
 
   return (
     <div className="mb-6 space-y-3">
+      {!listening && (
+        <div>
+          <label htmlFor="origin" className="field-label">¿Dónde estaban estos objetos? (opcional)</label>
+          <input id="origin" value={origin} onChange={(e) => setOrigin(e.target.value)}
+            placeholder="Ej: estantería del salón" className="field h-12 w-full text-base" />
+        </div>
+      )}
       {supported && (
         <button type="button" onClick={listening ? stopVoice : startVoice}
           className={`flex h-24 w-full items-center justify-center gap-3 rounded-xl border-2 border-foreground text-xl font-bold ${listening ? "animate-pulse bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"}`}

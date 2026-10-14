@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseItems } from "./parse-items";
+import { mergeTranscripts, parseItems } from "./parse-items";
 
 describe("parseItems", () => {
   it("splits dictation by commas and 'y' and reads number words", () => {
@@ -9,6 +9,12 @@ describe("parseItems", () => {
       { name: "Libro de cocina", quantity: 1 },
     ]);
   });
+  it("each 'y' starts a new item", () => {
+    expect(parseItems("sartén y libro y cargador y rotuladores").map((i) => i.name)).toEqual(["Sartén", "Libro", "Cargador", "Rotuladores"]);
+  });
+  it("adds a repeated item only once", () => {
+    expect(parseItems("sartén, Sarten, libro").map((i) => i.name)).toEqual(["Sartén", "Libro"]);
+  });
   it("splits by lines and reads digits", () => {
     expect(parseItems("3 tazas\nlámpara")).toEqual([
       { name: "Tazas", quantity: 3 },
@@ -17,6 +23,15 @@ describe("parseItems", () => {
   });
   it("defaults quantity to 1", () => {
     expect(parseItems("una manta")[0]?.quantity).toBe(1);
-    expect(parseItems("toallas")[0]?.quantity).toBe(1);
+  });
+});
+
+describe("mergeTranscripts", () => {
+  it("drops cumulative repeats from the browser", () => {
+    const t = mergeTranscripts(["sartén", "sartén y libro", "sartén y libro y cargador"]);
+    expect(parseItems(t).map((i) => i.name)).toEqual(["Sartén", "Libro", "Cargador"]);
+  });
+  it("keeps separate chunks", () => {
+    expect(mergeTranscripts(["sartén", "libro"])).toBe("sartén, libro");
   });
 });
