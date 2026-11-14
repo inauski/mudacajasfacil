@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Pencil, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ItemPhoto } from "@/components/ItemPhoto";
 
-type Item = { id: string; name: string; quantity: number; unpacked: boolean; origin?: string };
+type Item = { id: string; name: string; quantity: number; unpacked: boolean; origin?: string; photo?: string | null };
 
-export function ItemsList({ items, onChange }: { items: Item[]; onChange: () => Promise<unknown> }) {
+export function ItemsList({ items, onChange, boxId, userId }: { items: Item[]; onChange: () => Promise<unknown>; boxId: string; userId: string }) {
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [qty, setQty] = useState(1);
@@ -41,9 +42,10 @@ export function ItemsList({ items, onChange }: { items: Item[]; onChange: () => 
           </div>
         </li>
       ) : (
-        <li key={it.id} className="flex items-center gap-3 p-2 pl-3">
+        <li key={it.id} className="flex items-center gap-2 p-2 pl-3">
           <input type="checkbox" checked={it.unpacked} onChange={(e) => update(it.id, { unpacked: e.target.checked })}
             aria-label="Desembalado" className="h-7 w-7 shrink-0 accent-[var(--primary)]" />
+          <ItemPhoto itemId={it.id} boxId={boxId} userId={userId} photo={it.photo ?? null} onChange={onChange} />
           <div className="min-w-0 flex-1">
             <span className={`block text-base ${it.unpacked ? "text-muted-foreground line-through" : ""}`}>{it.name}</span>
             {it.origin && <span className="block text-sm text-muted-foreground">Estaba en: {it.origin}</span>}

@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const BUCKET = "box-photos";
 
-async function compress(file: File, max = 1600, quality = 0.8): Promise<Blob> {
+export async function compress(file: File, max = 1600, quality = 0.8): Promise<Blob> {
   const bmp = await createImageBitmap(file);
   const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
   const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);

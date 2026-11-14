@@ -87,7 +87,7 @@ function BoxDetail() {
 
           <h2 className="field-label">Objetos ({box.items.filter((i) => !i.unpacked).length} pendientes de {box.items.length})</h2>
           <QuickAddItems boxId={box.id} userId={user.id} onSaved={refresh} />
-          <ItemsList items={box.items} onChange={refresh} />
+          <ItemsList items={box.items} onChange={refresh} boxId={box.id} userId={user.id} />
           <BoxPhotos boxId={box.id} userId={user.id} photos={box.photos} onChange={refresh} />
           <button onClick={remove} className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-destructive"><Trash2 className="h-4 w-4" /> Borrar caja</button>
         </>
