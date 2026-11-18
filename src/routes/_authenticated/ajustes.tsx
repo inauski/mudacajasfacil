@@ -3,6 +3,7 @@ import { ShieldCheck, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { InstallHelp } from "@/components/InstallHelp";
 import { CleanupPhotos } from "@/components/CleanupPhotos";
+import { HowToHelp } from "@/components/HowToHelp";
 
 export const Route = createFileRoute("/_authenticated/ajustes")({
   head: () => ({ meta: [{ title: "Ajustes y privacidad · Muda Fácil" }, { name: "description", content: "Tu sesión, instalación en el móvil y cómo protegemos tus datos." }] }),
@@ -36,6 +37,7 @@ function Settings() {
         <p className="break-all text-muted-foreground">{user.email}</p>
         <button onClick={signOut} className="btn-secondary mt-3 w-full"><LogOut className="h-5 w-5" /> Cerrar sesión</button>
       </div>
+      <HowToHelp label="Ver las instrucciones de uso" />
       <InstallHelp />
       <CleanupPhotos userId={user.id} />
       <div className="box-card">
