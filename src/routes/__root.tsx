@@ -4,13 +4,15 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { LogoLoader } from "@/components/LogoLoader";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -122,6 +124,31 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+// Shows the pulsing logo while a navigation is in progress. Waits 150 ms
+// before appearing (so instant transitions don't flash) and stays at least
+// 400 ms once visible.
+function NavigationLoader() {
+  const isLoading = useRouterState({ select: (s) => s.isLoading });
+  const [visible, setVisible] = useState(false);
+  const shownAt = useRef(0);
+
+  useEffect(() => {
+    if (isLoading) {
+      const t = window.setTimeout(() => {
+        shownAt.current = Date.now();
+        setVisible(true);
+      }, 150);
+      return () => window.clearTimeout(t);
+    }
+    if (!visible) return;
+    const elapsed = Date.now() - shownAt.current;
+    const t = window.setTimeout(() => setVisible(false), Math.max(0, 400 - elapsed));
+    return () => window.clearTimeout(t);
+  }, [isLoading, visible]);
+
+  return visible ? <LogoLoader /> : null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
@@ -138,6 +165,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <NavigationLoader />
       <Toaster position="top-center" />
     </QueryClientProvider>
   );
