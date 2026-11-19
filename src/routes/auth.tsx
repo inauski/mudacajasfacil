@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Camera, Lock, Mic, Printer, Search, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 
@@ -15,6 +16,29 @@ export const Route = createFileRoute("/auth")({
   }),
   component: AuthPage,
 });
+
+const FEATURES = [
+  {
+    icon: Mic,
+    title: "Dicta los objetos",
+    body: "Di «sartén y libro y cargador» y la app los anota uno por uno, con su cantidad.",
+  },
+  {
+    icon: Camera,
+    title: "Fotos de caja y de objeto",
+    body: "Guarda cómo estaba colocado cada cosa para dejarla igual en la casa nueva.",
+  },
+  {
+    icon: Search,
+    title: "Busca en un segundo",
+    body: "Escribe «cargador» y te dice en qué caja está, de qué habitación viene y dónde está ahora.",
+  },
+  {
+    icon: Printer,
+    title: "Exporta o imprime",
+    body: "Descarga un CSV para Excel o imprime una hoja limpia, caja por caja, con casillas.",
+  },
+];
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -58,12 +82,42 @@ function AuthPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5 py-10">
-      <div className="mb-8">
+    <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-10">
+      <div className="mb-6">
         <span className="stamp mb-4 inline-block">Este lado arriba ↑</span>
         <h1 className="font-display text-5xl font-extrabold leading-[0.95]">Mudanza<br />en cajas</h1>
-        <p className="mt-3 text-lg text-muted-foreground">Sabe qué hay en cada caja. Solo tú ves tu inventario.</p>
+        <p className="mt-3 text-lg text-muted-foreground">
+          Sabe qué hay en cada caja. Solo tú ves tu inventario.
+        </p>
       </div>
+
+      <div className="box-card mb-6">
+        <p className="mb-3 flex items-center gap-2 font-display text-xl font-extrabold">
+          <Sparkles className="h-5 w-5 text-primary" /> Qué hace la app
+        </p>
+        <p className="mb-4 text-base text-muted-foreground">
+          Apuntas qué metes en cada caja de la mudanza, con su número, su habitación y fotos.
+          Al desembalar, tachas lo que ya has sacado.
+        </p>
+        <ul className="space-y-4">
+          {FEATURES.map((f) => (
+            <li key={f.title} className="flex gap-3">
+              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-foreground bg-secondary">
+                <f.icon className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <p className="font-display text-lg font-extrabold leading-tight">{f.title}</p>
+                <p className="mt-0.5 text-base leading-snug text-muted-foreground">{f.body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 flex items-start gap-2 border-t-2 border-foreground pt-3 text-base font-semibold">
+          <Lock className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+          Tu espacio es privado: cajas, objetos y fotos solo los ves tú.
+        </p>
+      </div>
+
       {sent ? (
         <div className="box-card">
           <p className="text-lg font-semibold">Revisa tu correo</p>
@@ -99,6 +153,10 @@ function AuthPage() {
           </button>
         </form>
       )}
+
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        Gratis, sin anuncios. Se puede instalar en la pantalla de inicio del móvil.
+      </p>
     </div>
   );
 }
