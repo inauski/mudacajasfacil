@@ -73,9 +73,15 @@ const STEPS: Step[] = [
       "En «Ajustes» tienes las instrucciones para añadirla a la pantalla de inicio: en iPhone, Safari → Compartir → «Añadir a pantalla de inicio»; en Android, el menú ⋮ de Chrome → «Instalar aplicación».",
   },
   {
+    title: "Comparte una caja si quieres",
+    body:
+      "Desde la ficha de la caja puedes compartirla con la persona que elijas, dándole permiso de solo ver, comentar o editar. También puedes enviarla como documento o imprimirla.",
+    tip: "Si no compartes nada, nadie más puede ver tus cajas: el acceso solo se da si tú lo decides.",
+  },
+  {
     title: "Tu espacio es privado",
     body:
-      "Solo tú ves tus cajas, objetos y fotos. En «Ajustes» tienes la lista de comprobación de privacidad y el botón para borrar de una vez las fotos que quedaron sueltas al eliminar cajas.",
+      "Nadie tiene acceso a tus cajas, objetos y fotos si tú no se lo das. Puedes quitar el acceso a quien se lo hayas dado en cualquier momento. En «Ajustes» tienes la lista de comprobación de privacidad y el botón para borrar de una vez las fotos que quedaron sueltas al eliminar cajas.",
   },
 ];
 

@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Camera, Lock, Mic, Printer, Search, Sparkles } from "lucide-react";
+import { Camera, Lock, Mic, Printer, Search, Share2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DESTINATION_KEY, safeDestination, pageMeta } from "@/lib/sharing";
 import { lovable } from "@/integrations/lovable";
@@ -32,6 +32,11 @@ const FEATURES = [
     icon: Printer,
     title: "Exporta o imprime",
     body: "Descarga un CSV para Excel o imprime una hoja limpia, caja por caja, con casillas.",
+  },
+  {
+    icon: Share2,
+    title: "Comparte la caja que elijas",
+    body: "Da acceso a quien tú decidas, solo para ver, comentar o editar. Si no compartes nada, nadie más puede ver tus cajas.",
   },
 ];
 
@@ -114,7 +119,7 @@ function AuthPage() {
         </ul>
         <p className="mt-4 flex items-start gap-2 border-t-2 border-foreground pt-3 text-base font-semibold">
           <Lock className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
-          Tu espacio es privado. Solo ven una caja las personas a las que das acceso.
+          Tu espacio es privado: nadie tiene acceso a tus cajas si tú no se lo das. Solo las ven las personas con las que decides compartirlas, y puedes quitarles el acceso cuando quieras.
         </p>
       </div>
 
