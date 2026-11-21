@@ -20,7 +20,7 @@ async function history() {
   expect(result.ok).toBe(true);
   return result.data as { action: string; actor_id: string; actor_label: string; created_at: string; details: Record<string, unknown> }[];
 }
-describe.skipIf(!enabled)("historial autenticado de caja nueva", () => {
+describe.skipIf(!enabled)("historial retirado en caja nueva", () => {
   beforeAll(async () => {
     if (!url || !key || !token || !actor) throw new Error("Authenticated test configuration unavailable");
     const result = await call("boxes", "POST", { user_id: actor, room: "Prueba de historial", notes: "Caja temporal de verificación" });
@@ -30,34 +30,24 @@ describe.skipIf(!enabled)("historial autenticado de caja nueva", () => {
   afterAll(async () => {
     if (boxId) expect((await call(`boxes?id=eq.${boxId}`, "DELETE")).ok).toBe(true);
   });
-  it("registra una modificación con actor real, fecha y estado elegido", async () => {
+  it("no registra creación ni modificaciones al retirar el historial", async () => {
+    expect(await history()).toEqual([]);
     expect((await call(`boxes?id=eq.${boxId}`, "PATCH", { status: "cerrada" })).ok).toBe(true);
-    const event = (await history()).find(e => e.action === "box_updated");
-    expect(event?.actor_id === actor).toBe(true);
-    expect(event?.actor_label === session.user.email).toBe(true);
-    expect(event?.details["status"]).toBe("cerrada");
-    expect(Number.isFinite(Date.parse(event?.created_at ?? ""))).toBe(true);
-    const count = (await history()).length;
-    await call(`boxes?id=eq.${boxId}`, "PATCH", { status: "cerrada" });
-    expect((await history()).length).toBe(count);
+    expect(await history()).toEqual([]);
   });
-  it("registra compartir, cambiar permisos y revocar sin duplicar al aceptar invitaciones", async () => {
+  it("compartir, cambiar permisos y revocar no genera historial", async () => {
     const email = `history-${crypto.randomUUID()}@example.com`;
     for (const role of ["reader", "editor"]) expect((await call("rpc/set_box_share", "POST", { _box_id: boxId, _email: email, _role: role })).ok).toBe(true);
-    const count = (await history()).length;
     expect((await call("rpc/accept_box_invites", "POST", {})).ok).toBe(true);
-    expect((await history()).length).toBe(count);
     expect((await call(`box_shares?box_id=eq.${boxId}`, "DELETE")).ok).toBe(true);
-    const events = await history();
-    for (const action of ["share_granted", "share_updated", "share_revoked"]) expect(events.some(e => e.action === action && e.actor_id === actor)).toBe(true);
+    expect(await history()).toEqual([]);
   });
-  it("registra comentarios y modificaciones de objetos", async () => {
+  it("comentarios y objetos siguen funcionando sin generar historial", async () => {
     expect((await call("box_comments", "POST", { box_id: boxId, user_id: actor, body: "Comentario de verificación" })).ok).toBe(true);
     const item = await call("items", "POST", { box_id: boxId, user_id: actor, name: "Sartén" });
     expect(item.ok).toBe(true);
     expect((await call(`items?id=eq.${String(item.data[0].id)}`, "PATCH", { origin: "Cajón" })).ok).toBe(true);
-    const events = await history();
-    for (const action of ["comment_added", "item_added", "item_updated"]) expect(events.some(e => e.action === action && e.actor_id === actor)).toBe(true);
+    expect(await history()).toEqual([]);
   });
   it("impide acceso anónimo y escritura, edición o borrado directo del historial", async () => {
     const anonymous = await call(`box_activity?box_id=eq.${boxId}`, "GET", undefined, false);

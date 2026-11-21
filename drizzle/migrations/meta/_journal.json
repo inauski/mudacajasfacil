@@ -50,6 +50,13 @@
       "when": 1795278250818,
       "tag": "0006_box_activity_history",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795278845966,
+      "tag": "0007_retire_box_history",
+      "breakpoints": true
     }
   ]
 }

@@ -19,12 +19,12 @@ export function BoxComments({ boxId, userId, role }: { boxId: string; userId: st
     if (!body.trim()) return; setBusy(true);
     const { error } = await supabase.from("box_comments").insert({ box_id: boxId, user_id: userId, body: body.trim() });
     setBusy(false); if (error) { toast.error("No se pudo comentar. Comprueba tu acceso."); return; }
-    setBody(""); await Promise.all([client.invalidateQueries({ queryKey: key }), client.invalidateQueries({ queryKey: ["box-history", boxId] })]);
+    setBody(""); await client.invalidateQueries({ queryKey: key });
   }
   async function remove(id: string) {
     if (!confirm("¿Borrar este comentario?")) return;
     const { error } = await supabase.from("box_comments").delete().eq("id", id);
-    if (error) toast.error("No se pudo borrar"); await Promise.all([client.invalidateQueries({ queryKey: key }), client.invalidateQueries({ queryKey: ["box-history", boxId] })]);
+    if (error) toast.error("No se pudo borrar"); await client.invalidateQueries({ queryKey: key });
   }
   return <section className="mb-8 space-y-3 border-t border-border pt-5">
     <h2 className="field-label">Comentarios</h2>

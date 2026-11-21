@@ -14,7 +14,6 @@ import { BoxPhotos } from "@/components/BoxPhotos";
 import { ShareBox } from "@/components/ShareBox";
 import { BoxComments } from "@/components/BoxComments";
 import { BoxPrint } from "@/components/BoxPrint";
-import { BoxHistory } from "@/components/BoxHistory";
 
 export const Route = createFileRoute("/_authenticated/cajas/$id")({
   head: () => ({ meta: pageMeta("Ficha de caja · Muda Fácil", "Información y contenido de una caja privada o compartida contigo.") }),
@@ -34,7 +33,6 @@ function BoxDetail() {
     queryClient.invalidateQueries({ queryKey: ["box", id] }),
     queryClient.invalidateQueries({ queryKey: ["boxes"] }),
     queryClient.invalidateQueries({ queryKey: ["inventory"] }),
-    queryClient.invalidateQueries({ queryKey: ["box-history", id] }),
   ]);
   async function setStatus(status: string) {
     if (!editable) return;
@@ -75,7 +73,6 @@ function BoxDetail() {
         <ItemsList items={box.items} onChange={refresh} boxId={box.id} userId={box.user_id} readOnly={!editable} />
         <BoxPhotos boxId={box.id} userId={box.user_id} photos={box.photos} onChange={refresh} readOnly={!editable} />
         <BoxComments boxId={box.id} userId={user.id} role={box.role} />
-        <BoxHistory boxId={box.id} userId={user.id} />
         {box.role === "owner" && <Button variant="ghost" onClick={() => void remove()} className="mb-8 h-12 text-destructive"><Trash2 /> Borrar caja</Button>}
       </>}
     </div>
