@@ -118,7 +118,8 @@
   .field-label { @apply mb-2 block text-sm font-bold uppercase tracking-wide; }
   .field { @apply h-14 w-full rounded-lg border-2 border-foreground bg-card px-4 text-lg outline-none focus:ring-4 focus:ring-ring/30; }
   .chip { @apply flex min-h-12 items-center justify-center rounded-lg border-2 border-foreground bg-card px-3 text-base font-semibold transition active:translate-y-px; }
-  .chip-active { @apply bg-foreground text-background; }
+  .chip-active { @apply border-foreground bg-accent text-accent-foreground; }
+  .chip.chip-active:hover, .chip.chip-active:focus-visible { background-color: var(--accent); color: var(--accent-foreground); }
   .chip-essential { @apply bg-accent; }
   .chip-fragile { @apply bg-destructive text-destructive-foreground; }
   .btn-primary { @apply inline-flex h-14 items-center justify-center gap-2 rounded-lg border-2 border-foreground bg-primary px-6 text-lg font-bold text-primary-foreground disabled:opacity-60; box-shadow: 3px 3px 0 0 var(--foreground); }

@@ -21,7 +21,7 @@ export function ShareBox({ box, role }: { box: DocumentBox & { id: string }; rol
   }});
   const link = typeof window === "undefined" ? "" : `${window.location.origin}/cajas/${box.id}`;
   const message = `Te comparto una caja en Muda Fácil. Entra con el correo al que te he dado acceso: ${link}`;
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ["box-shares", box.id] });
+  const refresh = () => Promise.all([queryClient.invalidateQueries({ queryKey: ["box-shares", box.id] }), queryClient.invalidateQueries({ queryKey: ["box-history", box.id] })]);
   async function grant(target: string, targetRole: string) {
     setBusy(true);
     try {

@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
+- Box history is append-only and written by database triggers with the authenticated actor; box_access gates reads so clients cannot forge actions or retain access after revocation.
 - Box codes are assigned on insert by the `assign_box_code` DB trigger via per-user `box_counters` (never client-side, monotonic after deletes); users may edit `code` afterwards (unique per user, case-insensitive) while `number` stays immutable.
 - Box collaboration uses per-box `box_shares`, never global roles; SQL RPCs bind invitations only to confirmed auth identities and RLS/identity triggers enforce each permission to prevent client-side escalation.
 - Items retain their box owner; private photos stay under `{owner_id}/{box_id}/`, with collaborator access limited to referenced files and signed URLs lasting 60 seconds to bound revocation latency.

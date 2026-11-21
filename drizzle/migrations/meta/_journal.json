@@ -43,6 +43,13 @@
       "when": 1795255568061,
       "tag": "0005_validate_new_box_photo_paths",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795278250818,
+      "tag": "0006_box_activity_history",
+      "breakpoints": true
     }
   ]
 }

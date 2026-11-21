@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { ROOMS, STATUSES } from "@/lib/boxes";
+import { Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export type BoxFormValues = {
   code?: string;
@@ -77,7 +79,9 @@ export function BoxForm({
         <label className="field-label">Estado</label>
         <div className="flex flex-wrap gap-2">
           {STATUSES.map((s) => (
-            <button type="button" key={s.value} onClick={() => setStatus(s.value)} className={`chip ${status === s.value ? "chip-active" : ""}`}>{s.label}</button>
+            <Button variant="selection" type="button" key={s.value} aria-pressed={status === s.value} data-selected={status === s.value} onClick={() => setStatus(s.value)} className="h-12 text-base font-semibold">
+              <Check className={status === s.value ? "visible" : "invisible"} aria-hidden="true" />{s.label}
+            </Button>
           ))}
         </div>
       </div>

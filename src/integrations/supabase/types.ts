@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      box_activity: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_label: string
+          box_id: string
+          created_at: string
+          details: Json
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_label: string
+          box_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_label?: string
+          box_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "box_activity_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       box_comments: {
         Row: {
           body: string

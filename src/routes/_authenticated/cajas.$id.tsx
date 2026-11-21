@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2, Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { boxQuery, STATUSES, statusLabel } from "@/lib/boxes";
@@ -14,6 +14,7 @@ import { BoxPhotos } from "@/components/BoxPhotos";
 import { ShareBox } from "@/components/ShareBox";
 import { BoxComments } from "@/components/BoxComments";
 import { BoxPrint } from "@/components/BoxPrint";
+import { BoxHistory } from "@/components/BoxHistory";
 
 export const Route = createFileRoute("/_authenticated/cajas/$id")({
   head: () => ({ meta: pageMeta("Ficha de caja · Muda Fácil", "Información y contenido de una caja privada o compartida contigo.") }),
@@ -33,6 +34,7 @@ function BoxDetail() {
     queryClient.invalidateQueries({ queryKey: ["box", id] }),
     queryClient.invalidateQueries({ queryKey: ["boxes"] }),
     queryClient.invalidateQueries({ queryKey: ["inventory"] }),
+    queryClient.invalidateQueries({ queryKey: ["box-history", id] }),
   ]);
   async function setStatus(status: string) {
     if (!editable) return;
@@ -65,7 +67,7 @@ function BoxDetail() {
       }} /> : <>
         {editable && <>
           <h2 className="field-label">Cambio rápido de estado</h2>
-          <div className="mb-5 grid grid-cols-2 gap-2">{STATUSES.map(s => <Button variant="outline" key={s.value} onClick={() => void setStatus(s.value)} className={`chip h-14 ${box.status === s.value ? "chip-active" : ""}`}>{s.label}</Button>)}</div>
+          <div className="mb-5 grid grid-cols-2 gap-2">{STATUSES.map(s => <Button variant="selection" key={s.value} aria-pressed={box.status === s.value} data-selected={box.status === s.value} onClick={() => void setStatus(s.value)} className="h-14 px-2 text-base font-semibold"><Check className={box.status === s.value ? "visible" : "invisible"} aria-hidden="true" />{s.label}</Button>)}</div>
           <Button variant="outline" onClick={() => setEditing(true)} className="mb-6 h-12 w-full">Editar caja</Button>
         </>}
         <h2 className="field-label">Objetos ({box.items.filter(i => !i.unpacked).length} pendientes de {box.items.length})</h2>
@@ -73,6 +75,7 @@ function BoxDetail() {
         <ItemsList items={box.items} onChange={refresh} boxId={box.id} userId={box.user_id} readOnly={!editable} />
         <BoxPhotos boxId={box.id} userId={box.user_id} photos={box.photos} onChange={refresh} readOnly={!editable} />
         <BoxComments boxId={box.id} userId={user.id} role={box.role} />
+        <BoxHistory boxId={box.id} userId={user.id} />
         {box.role === "owner" && <Button variant="ghost" onClick={() => void remove()} className="mb-8 h-12 text-destructive"><Trash2 /> Borrar caja</Button>}
       </>}
     </div>

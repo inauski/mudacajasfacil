@@ -134,6 +134,24 @@ describe.skipIf(!local)("privacidad real por caja (borrador local)", () => {
     expect(unsharedUpload.ok).toBe(false);
     await call(user(0).token, "/storage/v1/object/box-photos", "DELETE", { prefixes: [editorPath] });
   });
+  it("historial registra autor real y acciones de compartir, comentar y modificar", async () => {
+    const result = await call(user(0).token, `/rest/v1/box_activity?box_id=eq.${boxId}`);
+    expect(result.ok).toBe(true);
+    expect(result.data).toEqual(expect.arrayContaining([
+      expect.objectContaining({ action: "share_granted", actor_id: user(0).id, actor_label: user(0).email }),
+      expect.objectContaining({ action: "comment_added", actor_id: user(2).id, actor_label: user(2).email }),
+      expect.objectContaining({ action: "box_updated", actor_id: user(3).id, actor_label: user(3).email }),
+    ]));
+  });
+  it("historial permite lectura autorizada pero impide falsificar, editar y borrar acciones", async () => {
+    const result = await call(user(1).token, `/rest/v1/box_activity?box_id=eq.${boxId}`);
+    expect(result.ok).toBe(true); expect(result.data.length).toBeGreaterThan(0);
+    const event = result.data[0];
+    expect((await call(user(0).token, "/rest/v1/box_activity", "POST", { box_id: boxId, actor_id: user(3).id, actor_label: "Falso", action: "box_updated" })).ok).toBe(false);
+    await expectNoRows(await call(user(0).token, `/rest/v1/box_activity?id=eq.${event.id}`, "PATCH", { actor_label: "Falso" }));
+    await expectNoRows(await call(user(0).token, `/rest/v1/box_activity?id=eq.${event.id}`, "DELETE"));
+    expect((await call(user(4).token, `/rest/v1/box_activity?box_id=eq.${boxId}`)).data).toEqual([]);
+  });
   it("revocación bloquea lecturas, escrituras, comentarios y nuevas firmas de fotos", async () => {
     const shares = await call(user(0).token, `/rest/v1/box_shares?box_id=eq.${boxId}&recipient_id=eq.${user(3).id}`);
     const shareId = shares.data[0].id;
@@ -142,6 +160,7 @@ describe.skipIf(!local)("privacidad real por caja (borrador local)", () => {
     expect((await call(u.token, `/rest/v1/boxes?id=eq.${boxId}`)).data).toEqual([]);
     expect((await call(u.token, `/rest/v1/items?id=eq.${itemId}`)).data).toEqual([]);
     expect((await call(u.token, `/rest/v1/box_comments?box_id=eq.${boxId}`)).data).toEqual([]);
+    expect((await call(u.token, `/rest/v1/box_activity?box_id=eq.${boxId}`)).data).toEqual([]);
     await expectNoRows(await call(u.token, `/rest/v1/boxes?id=eq.${boxId}`, "PATCH", { location: "Después de revocar" }));
     expect((await call(u.token, "/rest/v1/box_comments", "POST", { box_id: boxId, body: "Después de revocar" })).ok).toBe(false);
     expect((await call(u.token, `/storage/v1/object/sign/box-photos/${photo}`, "POST", { expiresIn: 60 })).ok).toBe(false);
