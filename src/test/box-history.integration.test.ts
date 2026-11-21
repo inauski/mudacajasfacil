@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 const enabled = process.env["RUN_BOX_HISTORY_LIVE_TESTS"] === "1";
 const url = process.env["VITE_SUPABASE_URL"] ?? "";
 const key = process.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? "";
-const session = enabled ? JSON.parse(process.env["LOVABLE_BROWSER_SUPABASE_SESSION_JSON"] ?? "{}") : {};
+const session = enabled ? JSON.parse(process.env["LOVABLE_BROWSER_SUPABASE_SESSION_JSON"] || "{}") : {};
 const token: string = session.access_token ?? "";
 const actor: string = session.user?.id ?? "";
 let boxId = "";

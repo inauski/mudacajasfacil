@@ -1,6 +1,6 @@
 # Development
 - [x] Hacer legible la selección de estado al crear y editar cajas.
-- [ ] Retirar historial y desactivar nuevas entradas, conservando datos existentes.
+- [x] Retirar historial y desactivar nuevas entradas, conservando datos existentes.
 - [x] Compartir cajas con identidad verificada y permisos privados revocables.
 - [x] Separar cajas propias y compartidas; conservar destino al entrar.
 - [x] Comentarios, fotos privadas y controles según permisos.
