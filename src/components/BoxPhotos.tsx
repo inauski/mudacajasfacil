@@ -11,11 +11,14 @@ export async function compress(file: File, max = 1600, quality = 0.8): Promise<B
   const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
   const canvas = document.createElement("canvas");
   canvas.width = w; canvas.height = h;
-  canvas.getContext("2d")!.drawImage(bmp, 0, 0, w, h);
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("No se pudo comprimir la foto");
+  context.drawImage(bmp, 0, 0, w, h);
+  bmp.close();
   return new Promise((res, rej) => canvas.toBlob((b) => (b ? res(b) : rej(new Error("compress"))), "image/jpeg", quality));
 }
 
-export function BoxPhotos({ boxId, userId, photos, onChange }: { boxId: string; userId: string; photos: string[]; onChange: () => Promise<unknown> }) {
+export function BoxPhotos({ boxId, userId, photos, onChange, readOnly = false }: { boxId: string; userId: string; photos: string[]; onChange: () => Promise<unknown>; readOnly?: boolean }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [viewer, setViewer] = useState<number | null>(null);
@@ -25,15 +28,19 @@ export function BoxPhotos({ boxId, userId, photos, onChange }: { boxId: string; 
 
   useEffect(() => {
     if (!photos.length) { setUrls({}); return; }
-    supabase.storage.from(BUCKET).createSignedUrls(photos, 3600).then(({ data }) => {
+    let active = true;
+    const refresh = () => supabase.storage.from(BUCKET).createSignedUrls(photos, 60).then(({ data }) => {
       const m: Record<string, string> = {};
       data?.forEach((d) => { if (d.path && d.signedUrl) m[d.path] = d.signedUrl; });
-      setUrls(m);
+      if (active) setUrls(m);
     });
+    void refresh();
+    const timer = window.setInterval(() => void refresh(), 45000);
+    return () => { active = false; window.clearInterval(timer); };
   }, [photos.join("|")]);
 
   async function upload(files: FileList | null) {
-    if (!files?.length) return;
+    if (!files?.length || readOnly) return;
     setBusy(true);
     const added: string[] = [];
     for (const f of Array.from(files)) {
@@ -54,7 +61,7 @@ export function BoxPhotos({ boxId, userId, photos, onChange }: { boxId: string; 
   }
 
   async function remove(path: string) {
-    if (!confirm("¿Borrar esta foto?")) return;
+    if (readOnly || !confirm("¿Borrar esta foto?")) return;
     await supabase.storage.from(BUCKET).remove([path]);
     await supabase.from("boxes").update({ photos: photos.filter((p) => p !== path) }).eq("id", boxId);
     setViewer(null);
@@ -75,22 +82,22 @@ export function BoxPhotos({ boxId, userId, photos, onChange }: { boxId: string; 
           ))}
         </div>
       )}
-      <div className="grid grid-cols-2 gap-2">
+      {!readOnly && <div className="grid grid-cols-2 gap-2">
         <button disabled={busy} onClick={() => camRef.current?.click()} className="btn-secondary"><Camera className="h-5 w-5" /> Cámara</button>
         <button disabled={busy} onClick={() => fileRef.current?.click()} className="btn-secondary"><ImagePlus className="h-5 w-5" /> Galería</button>
-      </div>
+      </div>}
       {busy && <p className="mt-2 text-center text-sm text-muted-foreground">Comprimiendo y subiendo…</p>}
       <input ref={camRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => { upload(e.target.files); e.target.value = ""; }} />
       <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => { upload(e.target.files); e.target.value = ""; }} />
 
-      {viewer !== null && photos[viewer] && (() => { const cur = photos[viewer]!; return (
+      {viewer !== null && (() => { const cur = photos[viewer]; if (!cur) return null; return (
         <div className="fixed inset-0 z-50 flex flex-col bg-foreground"
           onTouchStart={(e) => { touchX.current = e.touches[0]?.clientX ?? 0; }}
           onTouchEnd={(e) => { const dx = (e.changedTouches[0]?.clientX ?? 0) - touchX.current; if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1); }}>
           <div className="flex items-center justify-between p-3 text-background">
             <span className="font-semibold">{viewer + 1} / {photos.length}</span>
             <div className="flex gap-2">
-              <button aria-label="Borrar foto" onClick={() => remove(cur)} className="flex h-12 w-12 items-center justify-center"><Trash2 /></button>
+              {!readOnly && <button aria-label="Borrar foto" onClick={() => remove(cur)} className="flex h-12 w-12 items-center justify-center"><Trash2 /></button>}
               <button aria-label="Cerrar" onClick={() => setViewer(null)} className="flex h-12 w-12 items-center justify-center"><X className="h-7 w-7" /></button>
             </div>
           </div>

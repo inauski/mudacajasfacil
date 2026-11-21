@@ -1,15 +1,11 @@
+import { pageMeta } from "@/lib/sharing";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { BoxForm } from "@/components/BoxForm";
 
 export const Route = createFileRoute("/_authenticated/cajas/nueva")({
-  head: () => ({
-    meta: [
-      { title: "Nueva caja · Mudanza" },
-      { name: "description", content: "Crea una nueva caja con su código correlativo." },
-    ],
-  }),
+  head: () => ({ meta: pageMeta("Nueva caja · Muda Fácil", "Crea una caja con código automático y compártela después de guardarla.") }),
   component: NewBox,
 });
 

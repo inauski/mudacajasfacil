@@ -3,17 +3,12 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Camera, Lock, Mic, Printer, Search, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { DESTINATION_KEY, safeDestination, pageMeta } from "@/lib/sharing";
 import { lovable } from "@/integrations/lovable";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({
-    meta: [
-      { title: "Entrar · Mudanza en cajas" },
-      { name: "description", content: "Inicia sesión o crea tu cuenta para organizar tu mudanza en privado." },
-      { property: "og:title", content: "Entrar · Mudanza en cajas" },
-      { property: "og:description", content: "Organiza tu mudanza caja a caja, en tu espacio privado." },
-    ],
-  }),
+  validateSearch: (search: Record<string, unknown>) => ({ redirect: safeDestination(search["redirect"]) }),
+  head: () => ({ meta: pageMeta("Entrar · Muda Fácil", "Inicia sesión o crea tu cuenta para organizar tu mudanza y acceder a cajas compartidas.") }),
   component: AuthPage,
 });
 
@@ -42,6 +37,9 @@ const FEATURES = [
 
 function AuthPage() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
+  const destination = () => safeDestination(search.redirect !== "/cajas" ? search.redirect : sessionStorage.getItem(DESTINATION_KEY));
+  const continueToBox = () => { const to = destination(); sessionStorage.removeItem(DESTINATION_KEY); void navigate({ to, replace: true }); };
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,35 +48,37 @@ function AuthPage() {
   const [googleBusy, setGoogleBusy] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => { if (data.session) navigate({ to: "/cajas", replace: true }); });
-  }, [navigate]);
+    supabase.auth.getSession().then(({ data }) => { if (data.session) continueToBox(); });
+  }, [navigate, search.redirect]);
 
   async function submit(e: React.FormEvent) {
+    sessionStorage.setItem(DESTINATION_KEY, destination());
     e.preventDefault();
     setBusy(true);
     if (mode === "login") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       setBusy(false);
       if (error) { toast.error("Email o contraseña incorrectos"); return; }
-      navigate({ to: "/cajas", replace: true });
+      continueToBox();
     } else {
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/auth?redirect=${encodeURIComponent(destination())}` } });
       setBusy(false);
       if (error) { toast.error(error.message); return; }
-      if (data.session) navigate({ to: "/cajas", replace: true });
+      if (data.session) continueToBox();
       else setSent(true);
     }
   }
 
   async function signInWithGoogle() {
+    sessionStorage.setItem(DESTINATION_KEY, destination());
     setGoogleBusy(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}/auth`,
     });
     setGoogleBusy(false);
     if (result.error) { toast.error("No se pudo iniciar sesión con Google"); return; }
     if (result.redirected) return;
-    navigate({ to: "/cajas", replace: true });
+    continueToBox();
   }
 
   return (
@@ -87,7 +87,7 @@ function AuthPage() {
         <span className="stamp mb-4 inline-block">Este lado arriba ↑</span>
         <h1 className="font-display text-5xl font-extrabold leading-[0.95]">Mudanza<br />en cajas</h1>
         <p className="mt-3 text-lg text-muted-foreground">
-          Sabe qué hay en cada caja. Solo tú ves tu inventario.
+          Sabe qué hay en cada caja. Tu inventario es privado: tú eliges qué cajas compartir.
         </p>
       </div>
 
@@ -114,10 +114,11 @@ function AuthPage() {
         </ul>
         <p className="mt-4 flex items-start gap-2 border-t-2 border-foreground pt-3 text-base font-semibold">
           <Lock className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
-          Tu espacio es privado: cajas, objetos y fotos solo los ves tú.
+          Tu espacio es privado. Solo ven una caja las personas a las que das acceso.
         </p>
       </div>
 
+      {search.redirect !== "/cajas" && <p className="mb-4 font-semibold">Entra con el correo autorizado para abrir la caja compartida.</p>}
       {sent ? (
         <div className="box-card">
           <p className="text-lg font-semibold">Revisa tu correo</p>

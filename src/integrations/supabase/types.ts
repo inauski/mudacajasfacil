@@ -7,13 +7,40 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.18"
-  }
   public: {
     Tables: {
+      box_comments: {
+        Row: {
+          body: string
+          box_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          box_id: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Update: {
+          body?: string
+          box_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "box_comments_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       box_counters: {
         Row: {
           last_number: number
@@ -28,6 +55,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      box_shares: {
+        Row: {
+          box_id: string
+          created_at: string
+          id: string
+          recipient_email: string
+          recipient_id: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          box_id: string
+          created_at?: string
+          id?: string
+          recipient_email: string
+          recipient_id?: string | null
+          role: string
+          user_id: string
+        }
+        Update: {
+          box_id?: string
+          created_at?: string
+          id?: string
+          recipient_email?: string
+          recipient_id?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "box_shares_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       boxes: {
         Row: {
@@ -129,7 +194,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      accept_box_invites: { Args: never; Returns: undefined }
+      box_access: { Args: { _box_id: string }; Returns: string }
+      box_photo_access: {
+        Args: { _path: string; _write?: boolean }
+        Returns: boolean
+      }
+      set_box_share: {
+        Args: { _box_id: string; _email: string; _role: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

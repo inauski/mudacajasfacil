@@ -1,0 +1,1 @@
+ALTER POLICY boxes_read_access ON public.boxes USING (user_id = auth.uid() OR public.box_access(id) IS NOT NULL);

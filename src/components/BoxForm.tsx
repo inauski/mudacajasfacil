@@ -15,10 +15,12 @@ export function BoxForm({
   initial,
   submitLabel,
   onSubmit,
+  allowCodeEdit = true,
 }: {
   initial?: Partial<BoxFormValues>;
   submitLabel: string;
   onSubmit: (v: BoxFormValues) => Promise<void>;
+  allowCodeEdit?: boolean;
 }) {
   const initRoom = initial?.room ?? "";
   const isCustom = initRoom !== "" && !ROOMS.includes(initRoom);
@@ -42,14 +44,14 @@ export function BoxForm({
           await onSubmit({
             room: (roomSel === "__otra" ? customRoom : roomSel).trim(),
             status, location: location.trim(),
-            ...(initial?.code !== undefined ? { code: code.trim().toUpperCase() } : {}), notes: notes.trim(), essential, fragile,
+            ...(allowCodeEdit && initial?.code !== undefined ? { code: code.trim().toUpperCase() } : {}), notes: notes.trim(), essential, fragile,
           });
         } finally {
           setBusy(false);
         }
       }}
     >
-      {initial?.code !== undefined && (
+      {allowCodeEdit && initial?.code !== undefined && (
         <div>
           <label className="field-label" htmlFor="code">Número de caja</label>
           <input id="code" required value={code} onChange={(e) => setCode(e.target.value)} placeholder="Ej. C-001" className="field font-display text-2xl font-extrabold uppercase" />

@@ -8,9 +8,12 @@ export const normalize = (s: string) =>
 export const inventoryQuery = queryOptions({
   queryKey: ["inventory"],
   queryFn: async () => {
+    const { data: auth, error: authError } = await supabase.auth.getUser();
+    if (authError || !auth.user) throw new Error("Inicia sesión para ver tu inventario");
     const { data, error } = await supabase
       .from("boxes")
       .select("id, code, number, room, status, location, notes, essential, fragile, items(id, name, quantity, unpacked)")
+      .eq("user_id", auth.user.id)
       .order("number");
     if (error) throw error;
     return data;

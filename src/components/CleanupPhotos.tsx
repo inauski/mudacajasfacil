@@ -25,8 +25,8 @@ async function listAll(prefix: string): Promise<string[]> {
 async function findOrphans(userId: string) {
   const [files, boxes, items] = await Promise.all([
     listAll(userId),
-    supabase.from("boxes").select("photos"),
-    supabase.from("items").select("photo"),
+    supabase.from("boxes").select("photos").eq("user_id", userId),
+    supabase.from("items").select("photo").eq("user_id", userId),
   ]);
   if (boxes.error) throw boxes.error;
   if (items.error) throw items.error;
@@ -53,8 +53,10 @@ export function CleanupPhotos({ userId }: { userId: string }) {
     if (!confirm(`¿Borrar definitivamente ${orphans.length} foto(s)? No se puede deshacer.`)) return;
     setBusy(true);
     try {
-      for (let i = 0; i < orphans.length; i += 100) {
-        const { error } = await supabase.storage.from(BUCKET).remove(orphans.slice(i, i + 100));
+      const fresh = new Set(await findOrphans(userId));
+      const removable = orphans.filter(path => path.startsWith(`${userId}/`) && fresh.has(path));
+      for (let i = 0; i < removable.length; i += 100) {
+        const { error } = await supabase.storage.from(BUCKET).remove(removable.slice(i, i + 100));
         if (error) throw error;
       }
       toast.success("Fotos borradas");

@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/sharing";
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Download, Printer } from "lucide-react";
@@ -5,7 +6,7 @@ import { inventoryQuery, toCSV } from "@/lib/inventory";
 import { statusLabel } from "@/lib/boxes";
 
 export const Route = createFileRoute("/_authenticated/exportar")({
-  head: () => ({ meta: [{ title: "Exportar · Muda Fácil" }, { name: "description", content: "Descarga tu inventario en CSV o imprímelo caja por caja." }] }),
+  head: () => ({ meta: pageMeta("Exportar inventario · Muda Fácil", "Descarga o imprime el inventario de tus propias cajas.") }),
   loader: ({ context }) => context.queryClient.ensureQueryData(inventoryQuery),
   component: ExportPage,
 });

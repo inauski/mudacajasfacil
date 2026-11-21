@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/sharing";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -6,7 +7,7 @@ import { inventoryQuery, normalize } from "@/lib/inventory";
 import { statusLabel } from "@/lib/boxes";
 
 export const Route = createFileRoute("/_authenticated/buscar")({
-  head: () => ({ meta: [{ title: "Buscar · Muda Fácil" }, { name: "description", content: "Encuentra en qué caja está cada objeto." }] }),
+  head: () => ({ meta: pageMeta("Buscar objetos · Muda Fácil", "Encuentra objetos dentro de tu inventario privado.") }),
   loader: ({ context }) => context.queryClient.ensureQueryData(inventoryQuery),
   component: SearchPage,
 });

@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { acceptInvites, type BoxRole } from "@/lib/sharing";
 
 export const ROOMS = [
   "Salón",
@@ -29,6 +30,7 @@ export const statusLabel = (s: string) => STATUSES.find((x) => x.value === s)?.l
 export const boxesQuery = queryOptions({
   queryKey: ["boxes"],
   queryFn: async () => {
+    await acceptInvites();
     const { data, error } = await supabase
       .from("boxes")
       .select("*, items(count)")
@@ -45,12 +47,19 @@ export const boxQuery = (id: string) =>
   queryOptions({
     queryKey: ["box", id],
     queryFn: async () => {
+      await acceptInvites();
       const { data, error } = await supabase
         .from("boxes")
         .select("*, items(*)")
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
-      return data;
+      if (!data) return null;
+      const access = await supabase.rpc("box_access", { _box_id: id });
+      if (access.error) throw access.error;
+      const role = access.data as BoxRole | null;
+      return role ? { ...data, role } : null;
     },
+    refetchInterval: 15000,
+    staleTime: 0,
   });

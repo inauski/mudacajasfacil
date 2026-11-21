@@ -6,7 +6,7 @@ import { ItemPhoto } from "@/components/ItemPhoto";
 
 type Item = { id: string; name: string; quantity: number; unpacked: boolean; origin?: string; photo?: string | null };
 
-export function ItemsList({ items, onChange, boxId, userId }: { items: Item[]; onChange: () => Promise<unknown>; boxId: string; userId: string }) {
+export function ItemsList({ items, onChange, boxId, userId, readOnly = false }: { items: Item[]; onChange: () => Promise<unknown>; boxId: string; userId: string; readOnly?: boolean }) {
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [qty, setQty] = useState(1);
@@ -14,11 +14,13 @@ export function ItemsList({ items, onChange, boxId, userId }: { items: Item[]; o
   const sorted = [...items].sort((a, b) => Number(a.unpacked) - Number(b.unpacked) || a.name.localeCompare(b.name, "es"));
 
   async function update(id: string, patch: Partial<Item>) {
+    if (readOnly) return;
     const { error } = await supabase.from("items").update(patch).eq("id", id);
     if (error) toast.error("No se pudo guardar");
     await onChange();
   }
   async function remove(it: Item) {
+    if (readOnly) return;
     if (!confirm(`¿Borrar «${it.name}»?`)) return;
     const { error } = await supabase.from("items").delete().eq("id", it.id);
     if (error) toast.error("No se pudo borrar");
@@ -29,7 +31,7 @@ export function ItemsList({ items, onChange, boxId, userId }: { items: Item[]; o
 
   return (
     <ul className="mb-6 divide-y divide-foreground/15 rounded-xl border-2 border-foreground bg-card">
-      {sorted.map((it) => editId === it.id ? (
+      {sorted.map((it) => !readOnly && editId === it.id ? (
         <li key={it.id} className="space-y-2 p-2">
           <div className="flex items-center gap-2">
             <input value={name} onChange={(e) => setName(e.target.value)} className="field h-12 flex-1 text-base" autoFocus aria-label="Nombre" />
@@ -43,16 +45,18 @@ export function ItemsList({ items, onChange, boxId, userId }: { items: Item[]; o
         </li>
       ) : (
         <li key={it.id} className="flex items-center gap-2 p-2 pl-3">
-          <input type="checkbox" checked={it.unpacked} onChange={(e) => update(it.id, { unpacked: e.target.checked })}
+          <input type="checkbox" disabled={readOnly} checked={it.unpacked} onChange={(e) => update(it.id, { unpacked: e.target.checked })}
             aria-label="Desembalado" className="h-7 w-7 shrink-0 accent-[var(--primary)]" />
-          <ItemPhoto itemId={it.id} boxId={boxId} userId={userId} photo={it.photo ?? null} onChange={onChange} />
+          <ItemPhoto itemId={it.id} boxId={boxId} userId={userId} photo={it.photo ?? null} onChange={onChange} readOnly={readOnly} />
           <div className="min-w-0 flex-1">
             <span className={`block text-base ${it.unpacked ? "text-muted-foreground line-through" : ""}`}>{it.name}</span>
             {it.origin && <span className="block text-sm text-muted-foreground">Estaba en: {it.origin}</span>}
           </div>
           <span className="font-semibold text-muted-foreground">×{it.quantity}</span>
-          <button aria-label="Editar" onClick={() => { setEditId(it.id); setName(it.name); setQty(it.quantity); setOrigin(it.origin ?? ""); }} className="flex h-11 w-11 items-center justify-center"><Pencil className="h-5 w-5" /></button>
-          <button aria-label="Borrar" onClick={() => remove(it)} className="flex h-11 w-11 items-center justify-center text-destructive"><Trash2 className="h-5 w-5" /></button>
+          {!readOnly && <>
+            <button aria-label="Editar" onClick={() => { setEditId(it.id); setName(it.name); setQty(it.quantity); setOrigin(it.origin ?? ""); }} className="flex h-11 w-11 items-center justify-center"><Pencil className="h-5 w-5" /></button>
+            <button aria-label="Borrar" onClick={() => remove(it)} className="flex h-11 w-11 items-center justify-center text-destructive"><Trash2 className="h-5 w-5" /></button>
+          </>}
         </li>
       ))}
     </ul>

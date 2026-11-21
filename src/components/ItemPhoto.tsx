@@ -6,7 +6,7 @@ import { compress } from "@/components/BoxPhotos";
 
 const BUCKET = "box-photos";
 
-export function ItemPhoto({ itemId, boxId, userId, photo, onChange }: { itemId: string; boxId: string; userId: string; photo: string | null; onChange: () => Promise<unknown> }) {
+export function ItemPhoto({ itemId, boxId, userId, photo, onChange, readOnly = false }: { itemId: string; boxId: string; userId: string; photo: string | null; onChange: () => Promise<unknown>; readOnly?: boolean }) {
   const [url, setUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
@@ -14,29 +14,33 @@ export function ItemPhoto({ itemId, boxId, userId, photo, onChange }: { itemId: 
 
   useEffect(() => {
     if (!photo) { setUrl(null); return; }
-    supabase.storage.from(BUCKET).createSignedUrl(photo, 3600).then(({ data }) => setUrl(data?.signedUrl ?? null));
+    let active = true;
+    const refresh = () => supabase.storage.from(BUCKET).createSignedUrl(photo, 60).then(({ data }) => { if (active) setUrl(data?.signedUrl ?? null); });
+    void refresh();
+    const timer = window.setInterval(() => void refresh(), 45000);
+    return () => { active = false; window.clearInterval(timer); };
   }, [photo]);
 
   async function upload(f: File | undefined) {
-    if (!f) return;
+    if (!f || readOnly) return;
     setBusy(true);
     try {
       const blob = await compress(f);
       const path = `${userId}/${boxId}/item-${crypto.randomUUID()}.jpg`;
       const { error } = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: "image/jpeg" });
       if (error) throw error;
+      if (photo) await supabase.storage.from(BUCKET).remove([photo]);
       const { error: e2 } = await supabase.from("items").update({ photo: path }).eq("id", itemId);
       if (e2) throw e2;
-      if (photo) await supabase.storage.from(BUCKET).remove([photo]);
       await onChange();
     } catch { toast.error("No se pudo subir la foto"); }
     setBusy(false);
   }
 
   async function remove() {
-    if (!photo || !confirm("¿Borrar la foto de este objeto?")) return;
-    await supabase.from("items").update({ photo: null }).eq("id", itemId);
+    if (readOnly || !photo || !confirm("¿Borrar la foto de este objeto?")) return;
     await supabase.storage.from(BUCKET).remove([photo]);
+    await supabase.from("items").update({ photo: null }).eq("id", itemId);
     setOpen(false);
     await onChange();
   }
@@ -47,7 +51,7 @@ export function ItemPhoto({ itemId, boxId, userId, photo, onChange }: { itemId: 
         <button aria-label="Ver foto de cómo estaba" onClick={() => setOpen(true)} className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border-2 border-foreground bg-muted">
           {url && <img src={url} alt="" className="h-full w-full object-cover" />}
         </button>
-      ) : (
+      ) : readOnly ? null : (
         <button aria-label="Añadir foto de cómo estaba" disabled={busy} onClick={() => ref.current?.click()}
           className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-foreground/40 ${busy ? "animate-pulse" : ""}`}>
           <Camera className="h-5 w-5" />
@@ -59,8 +63,10 @@ export function ItemPhoto({ itemId, boxId, userId, photo, onChange }: { itemId: 
           <div className="flex items-center justify-between p-3 text-background">
             <span className="font-semibold">Cómo estaba</span>
             <div className="flex gap-2">
-              <button aria-label="Cambiar foto" onClick={() => ref.current?.click()} className="flex h-12 w-12 items-center justify-center"><Camera /></button>
-              <button aria-label="Borrar foto" onClick={remove} className="flex h-12 w-12 items-center justify-center"><Trash2 /></button>
+              {!readOnly && <>
+                <button aria-label="Cambiar foto" onClick={() => ref.current?.click()} className="flex h-12 w-12 items-center justify-center"><Camera /></button>
+                <button aria-label="Borrar foto" onClick={remove} className="flex h-12 w-12 items-center justify-center"><Trash2 /></button>
+              </>}
               <button aria-label="Cerrar" onClick={() => setOpen(false)} className="flex h-12 w-12 items-center justify-center"><X className="h-7 w-7" /></button>
             </div>
           </div>

@@ -84,6 +84,8 @@
   --border: oklch(0.22 0.03 50 / 20%);
   --input: oklch(0.22 0.03 50);
   --ring: oklch(0.58 0.17 40);
+  --print-background: oklch(1 0 0);
+  --print-foreground: oklch(0 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -135,8 +137,8 @@
 }
 
 @media print {
-  .no-print, nav, [data-sonner-toaster] { display: none !important; }
-  body { background: white !important; color: black !important; }
-  .print-box { break-inside: avoid; box-shadow: none !important; background: white !important; margin-bottom: 12px; }
+  .no-print, nav, [data-sonner-toaster], [data-radix-popper-content-wrapper], [role="dialog"], [data-state][class*="fixed"][class*="inset-0"] { display: none !important; }
+  body { background: var(--print-background) !important; color: var(--print-foreground) !important; }
+  .print-box { break-inside: avoid; box-shadow: none !important; background: var(--print-background) !important; margin-bottom: 12px; }
   @page { margin: 14mm; }
 }

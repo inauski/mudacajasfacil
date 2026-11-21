@@ -1,18 +1,15 @@
+import { pageMeta } from "@/lib/sharing";
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { DESTINATION_KEY, safeDestination } from "@/lib/sharing";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   ssr: false,
-  head: () => ({
-    meta: [
-      { title: "Mudanza en cajas · Organiza tu mudanza" },
-      { name: "description", content: "Inventario privado de tu mudanza: cajas numeradas, objetos, fotos y búsqueda." },
-      { property: "og:title", content: "Mudanza en cajas" },
-      { property: "og:description", content: "Inventario privado de tu mudanza, caja a caja." },
-    ],
-  }),
+  head: () => ({ meta: pageMeta("Organiza tu mudanza · Muda Fácil", "Cajas, objetos y fotos privados con acceso compartido por invitación.") }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getSession();
-    throw redirect({ to: data.session ? "/cajas" : "/auth" });
+    const destination = safeDestination(sessionStorage.getItem(DESTINATION_KEY));
+    if (data.session) { sessionStorage.removeItem(DESTINATION_KEY); throw redirect({ to: destination }); }
+    throw redirect({ to: "/auth", search: { redirect: destination } });
   },
 });

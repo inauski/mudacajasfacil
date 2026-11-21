@@ -3,14 +3,13 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { AlertTriangle, Star, Plus, Search } from "lucide-react";
 import { boxesQuery, STATUSES, statusLabel } from "@/lib/boxes";
+import { Button } from "@/components/ui/button";
+import { pageMeta } from "@/lib/sharing";
 import { HowToHelp } from "@/components/HowToHelp";
 
 export const Route = createFileRoute("/_authenticated/cajas/")({
   head: () => ({
-    meta: [
-      { title: "Mis cajas · Mudanza" },
-      { name: "description", content: "Listado de tus cajas de mudanza con filtros por habitación y estado." },
-    ],
+    meta: pageMeta("Mis cajas · Muda Fácil", "Tus cajas y las compartidas contigo, con filtros por habitación y estado."),
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(boxesQuery),
   component: BoxesList,
@@ -18,22 +17,29 @@ export const Route = createFileRoute("/_authenticated/cajas/")({
 
 function BoxesList() {
   const { data: boxes } = useSuspenseQuery(boxesQuery);
+  const { user } = Route.useRouteContext();
+  const [view, setView] = useState<"own" | "shared">("own");
+  const visible = boxes.filter(b => view === "own" ? b.user_id === user.id : b.user_id !== user.id);
   const [room, setRoom] = useState("");
   const [status, setStatus] = useState("");
-  const rooms = useMemo(() => Array.from(new Set(boxes.map((b) => b.room).filter(Boolean))).sort(), [boxes]);
-  const filtered = boxes.filter((b) => (!room || b.room === room) && (!status || b.status === status));
+  const rooms = useMemo(() => Array.from(new Set(visible.map((b) => b.room).filter(Boolean))).sort(), [boxes, view, user.id]);
+  const filtered = visible.filter((b) => (!room || b.room === room) && (!status || b.status === status));
 
   return (
     <div className="px-4 pt-6">
       <header className="mb-5 flex items-end justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Mudanza</p>
-          <h1 className="font-display text-4xl font-extrabold">Mis cajas</h1>
+          <h1 className="font-display text-4xl font-extrabold">{view === "own" ? "Mis cajas" : "Compartidas"}</h1>
         </div>
-        <span className="stamp">{boxes.length} cajas</span>
+        <span className="stamp">{visible.length} cajas</span>
       </header>
       <Link to="/buscar" className="field mb-3 flex items-center gap-3 text-muted-foreground"><Search className="h-5 w-5" /> Buscar un objeto…</Link>
       <div className="mb-3"><HowToHelp /></div>
+      <div className="mb-4 grid grid-cols-2 gap-2" role="group" aria-label="Tipo de cajas">
+        <Button variant={view === "own" ? "default" : "outline"} className="h-12" onClick={() => { setView("own"); setRoom(""); setStatus(""); }}>Mis cajas</Button>
+        <Button variant={view === "shared" ? "default" : "outline"} className="h-12" onClick={() => { setView("shared"); setRoom(""); setStatus(""); }}>Compartidas ({boxes.filter(b => b.user_id !== user.id).length})</Button>
+      </div>
 
       <div className="mb-4 grid grid-cols-2 gap-2">
         <select value={room} onChange={(e) => setRoom(e.target.value)} className="h-12 rounded-lg border-2 border-foreground bg-card px-3 text-base">
@@ -46,10 +52,10 @@ function BoxesList() {
         </select>
       </div>
 
-      {boxes.length === 0 ? (
+      {visible.length === 0 ? (
         <div className="rounded-xl border-2 border-dashed border-foreground/40 p-8 text-center">
-          <p className="mb-4 text-lg">Aún no tienes cajas.</p>
-          <Link to="/cajas/nueva" className="btn-primary"><Plus className="h-5 w-5" /> Crear la primera</Link>
+          <p className="mb-4 text-lg">{view === "own" ? "Aún no tienes cajas." : "No tienes cajas compartidas. Entra con el correo al que te han dado acceso."}</p>
+          {view === "own" && <Link to="/cajas/nueva" className="btn-primary"><Plus className="h-5 w-5" /> Crear la primera</Link>}
         </div>
       ) : (
         <ul className="space-y-3">

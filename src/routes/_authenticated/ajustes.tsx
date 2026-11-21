@@ -1,3 +1,4 @@
+import { pageMeta } from "@/lib/sharing";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ShieldCheck, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,17 +7,17 @@ import { CleanupPhotos } from "@/components/CleanupPhotos";
 import { HowToHelp } from "@/components/HowToHelp";
 
 export const Route = createFileRoute("/_authenticated/ajustes")({
-  head: () => ({ meta: [{ title: "Ajustes y privacidad · Muda Fácil" }, { name: "description", content: "Tu sesión, instalación en el móvil y cómo protegemos tus datos." }] }),
+  head: () => ({ meta: pageMeta("Ajustes y privacidad · Muda Fácil", "Sesión, instalación y permisos de tus cajas compartidas.") }),
   component: Settings,
 });
 
 const CHECKS = [
-  "Cada caja, objeto y foto lleva tu identificador de usuario.",
-  "La base de datos solo te deja ver, crear, editar o borrar filas con tu identificador (seguridad por filas).",
-  "Otra persona, aunque conozca el enlace de una caja tuya, no recibe nada: la consulta vuelve vacía.",
-  "Tus fotos están en un almacén privado, en una carpeta con tu identificador; solo tú puedes subir o abrir sus archivos.",
-  "Las fotos se muestran con enlaces firmados que caducan en 1 hora.",
-  "La numeración C-001… es tuya: la asigna el servidor solo para tu cuenta.",
+  "Tu inventario no es público: solo tú y los destinatarios autorizados ven cada caja.",
+  "Lector: leer. Comentador: leer y añadir comentarios. Editor: modificar los campos y objetos de la caja.",
+  "Solo el propietario puede dar o revocar acceso, cambiar el código y eliminar la caja.",
+  "El destinatario inicia sesión con el correo confirmado al que has dado permiso.",
+  "Las fotos son privadas. Sus enlaces caducan en un minuto; las copias e impresiones no tienen permisos revocables.",
+  "La numeración de tus cajas es independiente de las cajas compartidas contigo.",
 ];
 
 function Settings() {
@@ -26,7 +27,7 @@ function Settings() {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/auth", search: { redirect: "/cajas" }, replace: true });
   }
   return (
     <div className="space-y-5 px-4 pt-6">

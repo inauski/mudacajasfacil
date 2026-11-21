@@ -22,6 +22,27 @@
       "when": 1792003333277,
       "tag": "0002_allow_edit_box_code",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795255130112,
+      "tag": "0003_box_collaboration",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795255374404,
+      "tag": "0004_box_owner_read_path",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795255568061,
+      "tag": "0005_validate_new_box_photo_paths",
+      "breakpoints": true
     }
   ]
 }
