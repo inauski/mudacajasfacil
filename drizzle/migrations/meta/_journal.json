@@ -57,6 +57,13 @@
       "when": 1795278845966,
       "tag": "0007_retire_box_history",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795711511301,
+      "tag": "0008_move_item_between_boxes",
+      "breakpoints": true
     }
   ]
 }

@@ -243,6 +243,10 @@ export type Database = {
         Args: { _path: string; _write?: boolean }
         Returns: boolean
       }
+      move_item: {
+        Args: { _item_id: string; _new_photo: string; _target_box: string }
+        Returns: undefined
+      }
       set_box_share: {
         Args: { _box_id: string; _email: string; _role: string }
         Returns: undefined
